@@ -242,13 +242,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
   },
-  title: { 
-    color: colors.text, 
-    fontSize: 28, 
+  title: {
+    color: colors.text,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    paddingTop: 60,
-    paddingBottom: 30,
+    paddingTop: 20,
+    paddingBottom: 10,
   },
   form: {
     marginHorizontal: 16,
