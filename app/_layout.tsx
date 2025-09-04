@@ -2,7 +2,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { colors } from '../constants/theme';
 
-export default function TabLayout() {
+export default function Layout() {
   return (
     <Tabs
       screenOptions={{

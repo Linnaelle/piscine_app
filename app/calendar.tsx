@@ -224,7 +224,7 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    paddingTop: 20,
+    paddingTop: 50,
     paddingBottom: 10,
   },
   calendar: {
