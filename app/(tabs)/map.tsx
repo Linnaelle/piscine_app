@@ -1,8 +1,9 @@
 import { colors } from '@/constants/theme';
-import { getEntries } from '@/storage/journal';
+import { addEntry, getEntries } from '@/storage/journal';
 import { JournalEntry } from '@/types/journal';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useState } from 'react';
 import { Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
@@ -33,6 +34,42 @@ export default function MapScreen() {
   const closeModal = () => {
     setModalVisible(false);
     setSelectedPhoto(null);
+  };
+
+  // 📸 Prendre une photo + récupérer coordonnées GPS
+  const pickImage = async () => {
+    const result = await ImagePicker.launchCameraAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: false,
+      exif: true, // ⚡ important pour récupérer GPS
+    });
+
+    if (!result.canceled) {
+      const asset = result.assets[0];
+      const { uri, exif } = asset;
+
+      const latitude = exif?.GPSLatitude;
+      const longitude = exif?.GPSLongitude;
+
+      if (latitude && longitude) {
+        const timestamp = Date.now();
+        const dateKey = new Date(timestamp).toISOString().split('T')[0]; // format AAAA-MM-JJ
+
+        const newEntry: JournalEntry = {
+          id: timestamp.toString(),
+          uri,
+          latitude,
+          longitude,
+          timestamp,
+          dateKey,
+        };
+
+        await addEntry(newEntry);
+        await loadEntries(); // recharge pour voir le marker
+      } else {
+        alert("La photo ne contient pas de coordonnées GPS !");
+      }
+    }
   };
 
   return (
@@ -76,6 +113,12 @@ export default function MapScreen() {
         </Text>
       </View>
 
+      {/* Bouton flottant pour prendre une photo */}
+      <TouchableOpacity style={styles.fab} onPress={pickImage}>
+        <MaterialIcons name="add-a-photo" size={28} color="#fff" />
+      </TouchableOpacity>
+
+      {/* Modal d’affichage photo */}
       <Modal
         animationType="fade"
         transparent={true}
@@ -169,5 +212,14 @@ const styles = StyleSheet.create({
   attributionText: {
     color: '#fff',
     fontSize: 10,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: colors.primary,
+    borderRadius: 30,
+    padding: 16,
+    elevation: 5,
   },
 });
