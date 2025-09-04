@@ -1,8 +1,8 @@
-import { colors } from '@/constants/theme';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import { colors } from '../../constants/theme';
 import { getEntriesByDate, getMarkedDates } from '../storage/journal';
 import { JournalEntry } from '../types/journal';
 

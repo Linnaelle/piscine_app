@@ -1,4 +1,3 @@
-import { colors } from '@/constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState } from 'react';
@@ -12,6 +11,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { colors } from '../../constants/theme';
 import { getEntries } from '../storage/journal';
 
 const USER_KEY = 'TRAVEL_JOURNAL_USER_V1';

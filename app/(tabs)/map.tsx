@@ -1,11 +1,11 @@
-import { colors } from '@/constants/theme';
-import { getEntries } from '@/storage/journal';
-import { JournalEntry } from '@/types/journal';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import MapView, { Marker, UrlTile } from 'react-native-maps';
+import { colors } from '../../constants/theme';
+import { getEntries } from '../storage/journal';
+import { JournalEntry } from '../types/journal';
 
 const { width, height } = Dimensions.get('window');
 

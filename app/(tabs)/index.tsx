@@ -1,9 +1,9 @@
-import { colors } from '@/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
 import * as Location from 'expo-location';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { colors } from '../../constants/theme';
 import { addEntry } from '../storage/journal';
 import { JournalEntry } from '../types/journal';
 
