@@ -1,11 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { JournalEntry } from '../types/journal';
+import { getAuthenticatedUser } from './auth';
 
-const KEY = 'TRAVEL_JOURNAL_ENTRIES_V1';
+const BASE_KEY = 'TRAVEL_JOURNAL_ENTRIES_V2';
+
+const getUserEntriesKey = async (): Promise<string> => {
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    throw new Error('Utilisateur non authentifié');
+  }
+  return `${BASE_KEY}_${user.id}`;
+};
 
 export async function getEntries(): Promise<JournalEntry[]> {
   try {
-    const raw = await AsyncStorage.getItem(KEY);
+    const key = await getUserEntriesKey();
+    const raw = await AsyncStorage.getItem(key);
     return raw ? (JSON.parse(raw) as JournalEntry[]) : [];
   } catch (error) {
     console.error('Error getting entries:', error);
@@ -15,9 +25,10 @@ export async function getEntries(): Promise<JournalEntry[]> {
 
 export async function addEntry(entry: JournalEntry): Promise<void> {
   try {
+    const key = await getUserEntriesKey();
     const all = await getEntries();
-    all.unshift(entry); // plus récent en premier
-    await AsyncStorage.setItem(KEY, JSON.stringify(all));
+    all.unshift(entry);
+    await AsyncStorage.setItem(key, JSON.stringify(all));
   } catch (error) {
     console.error('Error adding entry:', error);
     throw error;

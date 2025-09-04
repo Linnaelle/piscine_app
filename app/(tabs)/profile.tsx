@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+import { router } from 'expo-router';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
@@ -11,15 +11,14 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
-import { colors } from '../constants/theme';
-import { getEntries } from '../storage/journal';
-
-const USER_KEY = 'TRAVEL_JOURNAL_USER_V1';
-
-type UserData = {
-  name: string;
-  bio: string;
-};
+import { colors } from '../../constants/theme';
+import { setAuthenticatedUser } from '../../storage/auth';
+import { getEntries } from '../../storage/journal';
+import {
+  User,
+  getUser,
+  updateUser
+} from '../../storage/user';
 
 type Stats = {
   total: number;
@@ -35,6 +34,7 @@ export default function ProfileScreen() {
   const [stats, setStats] = useState<Stats>({ total: 0, days: 0, locations: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -45,24 +45,17 @@ export default function ProfileScreen() {
   const loadData = async () => {
     setIsLoading(true);
     try {
-      await Promise.all([loadUserData(), loadStats()]);
+      const userData = await getUser();
+      if (userData) {
+        setUser(userData);
+        setName(userData.name);
+        setBio(userData.bio);
+      }
+      await loadStats();
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const loadUserData = async () => {
-    try {
-      const userData = await AsyncStorage.getItem(USER_KEY);
-      if (userData) {
-        const parsed: UserData = JSON.parse(userData);
-        setName(parsed.name || '');
-        setBio(parsed.bio || '');
-      }
-    } catch (error) {
-      console.error('Error loading user data:', error);
     }
   };
 
@@ -91,6 +84,29 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Déconnexion',
+      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      [
+        {
+          text: 'Déconnexion',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await setAuthenticatedUser(null);
+              router.push('/');
+            } catch (error) {
+              console.error('Error logging out:', error);
+              Alert.alert('Erreur', 'Impossible de se déconnecter');
+            }
+          },
+        },
+        { text: 'Annuler', style: 'cancel' }
+      ]
+    );
+  };
+
   const save = async () => {
     if (!name.trim()) {
       Alert.alert('Erreur', 'Veuillez saisir votre nom');
@@ -99,8 +115,17 @@ export default function ProfileScreen() {
 
     setIsSaving(true);
     try {
-      const userData: UserData = { name: name.trim(), bio: bio.trim() };
-      await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
+      let updatedUser;
+      if (user) {
+        updatedUser = await updateUser({ 
+          name: name.trim(), 
+          bio: bio.trim() 
+        });
+      } else {
+        Alert.alert('Erreur', 'Veuillez vous connecter');
+        return;
+      }
+      setUser(updatedUser);
       Alert.alert('Succès', 'Profil enregistré avec succès');
     } catch (error) {
       console.error('Error saving user data:', error);
@@ -222,6 +247,13 @@ export default function ProfileScreen() {
           </View>
         )}
       </View>
+
+      <TouchableOpacity 
+        style={styles.logoutButton}
+        onPress={handleLogout}
+      >
+        <Text style={styles.logoutButtonText}>Déconnexion</Text>
+      </TouchableOpacity>
       
       <View style={{ height: 100 }} />
     </ScrollView>
@@ -368,6 +400,21 @@ const styles = StyleSheet.create({
   dateInfoValue: {
     color: colors.primary,
     fontSize: 14,
+    fontWeight: '600',
+  },
+  logoutButton: {
+    backgroundColor: colors.bg,
+    marginHorizontal: 16,
+    marginTop: 24,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ff4444',
+  },
+  logoutButtonText: {
+    color: '#ff4444',
+    fontSize: 16,
     fontWeight: '600',
   },
 });

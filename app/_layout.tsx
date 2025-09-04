@@ -1,66 +1,40 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import { colors } from '../constants/theme';
+import { isAuthenticated } from '../storage/auth';
 
-export default function Layout() {
+export default function RootLayout() {
+  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    const auth = await isAuthenticated();
+    setIsAuth(auth);
+  };
+
+  if (isAuth === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
-    <Tabs
+    <Stack 
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colors.bg,
-          borderTopColor: colors.card,
-          borderTopWidth: 1,
-        },
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.muted,
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Appareil',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="camera-alt" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="map"
-        options={{
-          title: 'Carte',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="map" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="calendar"
-        options={{
-          title: 'Calendrier',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="calendar-today" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="photos"
-        options={{
-          title: 'Photos',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="photo-library" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profil',
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="person" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tabs>
+      {!isAuth ? (
+        <Stack.Screen name="index" />
+      ) : (
+        <Stack.Screen name="(tabs)" />
+      )}
+    </Stack>
   );
 }
