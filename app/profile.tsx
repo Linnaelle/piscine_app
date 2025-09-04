@@ -1,4 +1,3 @@
-import { colors } from '@/constants/theme';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState } from 'react';
@@ -12,6 +11,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { colors } from '../constants/theme';
 import { getEntries } from '../storage/journal';
 
 const USER_KEY = 'TRAVEL_JOURNAL_USER_V1';
@@ -242,13 +242,13 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
   },
-  title: { 
-    color: colors.text, 
-    fontSize: 28, 
+  title: {
+    color: colors.text,
+    fontSize: 32,
     fontWeight: 'bold',
     textAlign: 'center',
-    paddingTop: 60,
-    paddingBottom: 30,
+    paddingTop: 50,
+    paddingBottom: 10,
   },
   form: {
     marginHorizontal: 16,
