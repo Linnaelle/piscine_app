@@ -4,8 +4,8 @@ import * as Location from 'expo-location';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { colors } from '../../constants/theme';
-import { addEntry } from '../storage/journal';
-import { JournalEntry } from '../types/journal';
+import { addEntry } from '../../storage/journal';
+import { JournalEntry } from '../../types/journal';
 
 export default function CameraScreen() {
   const [facing, setFacing] = useState<CameraType>('back');
@@ -74,7 +74,7 @@ export default function CameraScreen() {
       
     } catch (error) {
       console.error('Error taking picture:', error);
-      Alert.alert('Erreur', 'Impossible de prendre la photo');
+      Alert.alert('Erreur', 'Impossible de prendre la photo : ', error);
     } finally {
       setIsCapturing(false);
     }
@@ -104,7 +104,6 @@ export default function CameraScreen() {
       >
         <View style={styles.overlay}>
           <View style={styles.topBar}>
-            <Text style={styles.title}>Capture ton voyage</Text>
           </View>
           
           <View style={styles.bottomBar}>
