@@ -1,20 +1,20 @@
-import { colors } from '@/constants/theme';
 import { MaterialIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useMemo, useState } from 'react';
 import {
-    Dimensions,
-    FlatList,
-    Image,
-    Modal,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Dimensions,
+  FlatList,
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { getEntries } from '../storage/journal';
-import { JournalEntry } from '../types/journal';
+import { colors } from '../../constants/theme';
+import { getEntries } from '../../storage/journal';
+import { JournalEntry } from '../../types/journal';
 
 const { width, height } = Dimensions.get('window');
 

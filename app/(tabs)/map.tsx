@@ -1,11 +1,11 @@
-import { colors } from '@/constants/theme';
-import { getEntries } from '@/storage/journal';
-import { JournalEntry } from '@/types/journal';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useState } from 'react';
 import { Dimensions, Image, Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import MapView, { Marker, UrlTile } from 'react-native-maps';
+import { WebView } from 'react-native-webview';
+import { colors } from '../../constants/theme';
+import { getEntries } from '../storage/journal';
+import { JournalEntry } from '../types/journal';
 
 const { width, height } = Dimensions.get('window');
 
@@ -35,44 +35,64 @@ export default function MapScreen() {
     setSelectedPhoto(null);
   };
 
+  const leafletHtml = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+        <style>
+          #map { position:absolute; top:0; bottom:0; right:0; left:0; }
+        </style>
+      </head>
+      <body>
+        <div id="map"></div>
+        <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+        <script>
+          var map = L.map('map').setView([48.8566, 2.3522], 5);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(map);
+
+          const entries = ${JSON.stringify(entries)};
+          var markers = [];
+
+          entries.forEach(entry => {
+            if (entry.latitude && entry.longitude) {
+              var marker = L.marker([entry.latitude, entry.longitude]).addTo(map);
+              markers.push([entry.latitude, entry.longitude]);
+              marker.on('click', function() {
+                window.ReactNativeWebView.postMessage(JSON.stringify(entry));
+              });
+            }
+          });
+
+          if (markers.length > 0) {
+            var bounds = L.latLngBounds(markers);
+            map.fitBounds(bounds, { padding: [50, 50] }); // marge pour respirer
+          }
+        </script>
+      </body>
+    </html>
+  `;
+
   return (
     <View style={styles.container}>
-      <MapView
+      <WebView
+        originWhitelist={['*']}
+        source={{ html: leafletHtml }}
         style={styles.map}
-        initialRegion={{
-          latitude: 48.8566,
-          longitude: 2.3522,
-          latitudeDelta: 0.0922,
-          longitudeDelta: 0.0421,
+        javaScriptEnabled={true}
+        domStorageEnabled={true}
+        onMessage={(event) => {
+          try {
+            const entry: JournalEntry = JSON.parse(event.nativeEvent.data);
+            openPhotoModal(entry);
+          } catch (e) {
+            console.error("Erreur WebView:", e);
+          }
         }}
-      >
-        {/* Couche tuiles OpenStreetMap */}
-        <UrlTile
-          urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maximumZ={19}
-          zIndex={-1}
-        />
-
-        {entries.map((entry) => (
-          <Marker
-            key={entry.id}
-            coordinate={{
-              latitude: entry.latitude,
-              longitude: entry.longitude,
-            }}
-            onPress={() => openPhotoModal(entry)}
-          >
-            <View style={styles.markerContainer}>
-              <MaterialIcons name="camera-alt" size={24} color={colors.primary} />
-            </View>
-          </Marker>
-        ))}
-      </MapView>
-
-      {/* Attribution OSM */}
-      <View style={styles.attribution}>
-        <Text style={styles.attributionText}>© OpenStreetMap contributors</Text>
-      </View>
+      />
 
       <Modal
         animationType="fade"
@@ -107,19 +127,8 @@ export default function MapScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  map: {
-    flex: 1,
-  },
-  markerContainer: {
-    backgroundColor: colors.bg,
-    padding: 8,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: colors.primary,
-  },
+  container: { flex: 1 },
+  map: { flex: 1 },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.9)',
@@ -154,18 +163,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 15,
     textAlign: 'center',
-  },
-  attribution: {
-    position: 'absolute',
-    bottom: 8,
-    right: 8,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  attributionText: {
-    color: '#fff',
-    fontSize: 10,
   },
 });
