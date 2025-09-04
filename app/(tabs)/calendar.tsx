@@ -1,6 +1,6 @@
 import { useFocusEffect } from '@react-navigation/native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { colors } from '../../constants/theme';
 import { getEntriesByDate, getMarkedDates } from '../../storage/journal';
@@ -88,68 +88,73 @@ export default function CalendarScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Calendrier</Text>
-      
-      <Calendar
-        onDayPress={(day: any) => setSelected(day.dateString)}
-        markedDates={calendarMarked}
-        theme={{
-          calendarBackground: colors.bg,
-          dayTextColor: colors.text,
-          monthTextColor: colors.text,
-          todayTextColor: colors.primary,
-          selectedDayBackgroundColor: colors.primary,
-          selectedDayTextColor: colors.bg,
-          textSectionTitleColor: colors.muted,
-          arrowColor: colors.primary,
-          disabledArrowColor: colors.muted,
-          dotColor: colors.primary,
-          selectedDotColor: colors.bg,
-          backgroundColor: colors.bg,
-          textDayFontWeight: '500',
-          textMonthFontWeight: 'bold',
-          textDayHeaderFontWeight: '600',
-        }}
-        style={styles.calendar}
-      />
+    <ScrollView style={styles.container} bounces={false}>
+      <View>
+        <Text style={styles.title}>Calendrier</Text>
+        
+        <Calendar
+          onDayPress={(day: any) => setSelected(day.dateString)}
+          markedDates={calendarMarked}
+          theme={{
+            calendarBackground: colors.bg,
+            dayTextColor: colors.text,
+            monthTextColor: colors.text,
+            todayTextColor: colors.primary,
+            selectedDayBackgroundColor: colors.primary,
+            selectedDayTextColor: colors.bg,
+            textSectionTitleColor: colors.muted,
+            arrowColor: colors.primary,
+            disabledArrowColor: colors.muted,
+            dotColor: colors.primary,
+            selectedDotColor: colors.bg,
+            backgroundColor: colors.bg,
+            textDayFontWeight: '500',
+            textMonthFontWeight: 'bold',
+            textDayHeaderFontWeight: '600',
+          }}
+          style={styles.calendar}
+        />
 
-      {selected && (
-        <View style={styles.selectedDateContainer}>
-          <Text style={styles.selectedDateText}>
-            Photos du {new Date(selected).toLocaleDateString('fr-FR', {
-              weekday: 'long',
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </Text>
-          <Text style={styles.photoCount}>
-            {items.length} photo{items.length !== 1 ? 's' : ''}
-          </Text>
+        {selected && (
+            <View style={styles.selectedDateContainer}>
+              <Text style={styles.selectedDateText}>
+                Photos du {new Date(selected).toLocaleDateString('fr-FR', {
+                  weekday: 'long',
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </Text>
+              <Text style={styles.photoCount}>
+                {items.length} photo{items.length !== 1 ? 's' : ''}
+              </Text>
+            </View>
+        )}
+
+        <View style={styles.photosContainer}>
+          <FlatList
+            data={items}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.photosList}
+            numColumns={2}
+            scrollEnabled={false}
+            showsVerticalScrollIndicator={false}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>
+                  {selected 
+                    ? "Aucune photo pour cette date"
+                    : "Sélectionnez une date pour voir les photos correspondantes"
+                  }
+                </Text>
+              </View>
+            }
+            renderItem={renderPhotoItem}
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+          />
         </View>
-      )}
-
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.photosList}
-        numColumns={2}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {selected 
-                ? "Aucune photo pour cette date"
-                : "Sélectionnez une date avec des points bleus 🔵"
-              }
-            </Text>
-          </View>
-        }
-        renderItem={renderPhotoItem}
-        ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
-      />
-    </View>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -200,10 +205,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  photosList: {
-    paddingHorizontal: 16,
-    paddingBottom: 100,
-  },
   gridItem: {
     flex: 0.5,
     aspectRatio: 1,
@@ -218,6 +219,12 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.22,
     shadowRadius: 2.22,
+  },
+  photosContainer: {
+    paddingBottom: 20,
+  },
+  photosList: {
+    paddingHorizontal: 16,
   },
   photoImage: {
     width: '100%',
