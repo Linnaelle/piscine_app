@@ -46,9 +46,9 @@ export default function MapScreen() {
           longitudeDelta: 0.0421,
         }}
       >
-        {/* Couche tuiles OpenStreetMap */}
+        {/* Couche MapTiler avec clé API */}
         <UrlTile
-          urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+          urlTemplate="https://api.maptiler.com/maps/streets/{z}/{x}/{y}.png?key=Y18ZcM0cJEbWYunGe8jH"
           maximumZ={19}
           zIndex={-1}
         />
@@ -69,9 +69,11 @@ export default function MapScreen() {
         ))}
       </MapView>
 
-      {/* Attribution OSM */}
+      {/* Attribution légale */}
       <View style={styles.attribution}>
-        <Text style={styles.attributionText}>© OpenStreetMap contributors</Text>
+        <Text style={styles.attributionText}>
+          © MapTiler © OpenStreetMap contributors
+        </Text>
       </View>
 
       <Modal
