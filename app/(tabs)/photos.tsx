@@ -13,8 +13,8 @@ import {
   View,
 } from 'react-native';
 import { colors } from '../../constants/theme';
-import { getEntries } from '../storage/journal';
-import { JournalEntry } from '../types/journal';
+import { getEntries } from '../../storage/journal';
+import { JournalEntry } from '../../types/journal';
 
 const { width, height } = Dimensions.get('window');
 

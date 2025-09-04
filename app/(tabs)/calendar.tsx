@@ -3,8 +3,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { colors } from '../../constants/theme';
-import { getEntriesByDate, getMarkedDates } from '../storage/journal';
-import { JournalEntry } from '../types/journal';
+import { getEntriesByDate, getMarkedDates } from '../../storage/journal';
+import { JournalEntry } from '../../types/journal';
 
 export default function CalendarScreen() {
   const [markedDates, setMarkedDates] = useState<any>({});

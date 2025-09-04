@@ -12,7 +12,7 @@ import {
   View
 } from 'react-native';
 import { colors } from '../../constants/theme';
-import { getEntries } from '../storage/journal';
+import { getEntries } from '../../storage/journal';
 
 const USER_KEY = 'TRAVEL_JOURNAL_USER_V1';
 
