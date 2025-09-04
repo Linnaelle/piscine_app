@@ -107,21 +107,21 @@ type UserData = {
 - **Composants clés** : `CameraView`, `TouchableOpacity`
 - **Permissions** : Caméra et Localisation
 - **Storage** : Sauvegarde automatique via `addEntry()`
-![Camera Screen](./screenshots/camera-screen.png)
+![Camera Screen](./screenshots/camera-screen.jpg)
 
 #### 2. CalendarScreen (`app/calendar.tsx`)
 - **Fonctionnalité** : Navigation par dates avec aperçu photos
 - **Composants clés** : `Calendar`, `FlatList`, `Modal`
 - **Data** : `getMarkedDates()`, `getEntriesByDate()`
 - **UI** : Grille 2 colonnes, modal photo plein écran
-![Calendar Screen](./screenshots/calendar-screen.png)
+![Calendar Screen](./screenshots/calendar-screen.jpg)
 
 #### 3. MapScreen (`app/map.tsx`)
 - **Fonctionnalité** : Carte interactive avec markers
 - **Composants clés** : `WebView` avec Leaflet
 - **Data** : Toutes les entrées avec coordonnées GPS
 - **Interaction** : Clic sur marker → modal photo
-![Map Screen](./screenshots/map-screen.png)
+![Map Screen](./screenshots/map-screen.jpg)
 
 
 #### 4. PhotosScreen (`app/photos.tsx`)
@@ -129,14 +129,14 @@ type UserData = {
 - **Composants clés** : `FlatList`, `Picker`, `Modal`
 - **Features** : Filtre par date, compteur photos
 - **UI** : Grille responsive, overlay dates
-![Photos Screen](./screenshots/photos-screen.png)
+![Photos Screen](./screenshots/photos-screen.jpg)
 
 #### 5. ProfileScreen (`app/profile.tsx`)
 - **Fonctionnalité** : Profil utilisateur et statistiques
 - **Storage** : `AsyncStorage` pour données utilisateur
 - **Statistiques** : Total photos, jours, lieux, moyennes
 - **UI** : Formulaire + cards statistiques
-![Profile Screen](./screenshots/profile-screen.png)
+![Profile Screen](./screenshots/profile-screen.jpg)
 
 ### Gestion du Stockage
 
