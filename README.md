@@ -62,24 +62,27 @@ L'application demande automatiquement les permissions suivantes :
 
 ```
 piscine_app/
-├── android/              # Le build de l'application sur android, nécessaire pour faire fonctionner la carte
-├── app/                  # Pages de l'application (Expo Router)
-│   ├── _layout.tsx       # Configuration des onglets
-│   ├── index.tsx         # Écran Appareil Photo
-│   ├── calendar.tsx      # Écran Calendrier
-│   ├── map.tsx           # Écran Carte
-│   ├── photos.tsx        # Écran Galerie
-│   └── profile.tsx       # Écran Profil
+├── android/                    # Le build de l'application sur android, nécessaire pour faire fonctionner la carte
+├── app/                        # Pages de l'application (Expo Router)
+│   ├── (tabs)
+│   ├──   ├── _layout.tsx       # Configuration des onglets
+│   ├──   ├── calendar.tsx      # Écran Calendrier
+│   ├──   ├── camera.tsx        # Écran Appareil Photo
+│   ├──   ├── map.tsx           # Écran Carte
+│   ├──   ├── photos.tsx        # Écran Galerie
+│   ├──   └── profile.tsx       # Écran Profil
+│   ├── _layout.tsx             # Configuration des onglets
+│   └── index.tsx               # Écran Login
 ├── constants/
-│   └── theme.ts          # Thème et couleurs
+│   └── theme.ts                # Thème et couleurs
 ├── storage/
-│   ├── journal.ts        # Gestion du stockage local
-│   ├── user.ts           # Gestion des utilisateurs
-│   └── auth.ts           # Gestion de l'authentification
+│   ├── journal.ts              # Gestion du stockage local
+│   ├── user.ts                 # Gestion des utilisateurs
+│   └── auth.ts                 # Gestion de l'authentification
 ├── types/
-│   ├── user.ts           # Modèles utilisateurs
-│   └── journal.ts        # Modèles de donnée
-└── screenshots/          # Captures d'écran
+│   ├── user.ts                 # Modèles utilisateurs
+│   └── journal.ts              # Modèles de donnée
+└── screenshots/                # Captures d'écran
 ```
 
 ### Modèles de Données
