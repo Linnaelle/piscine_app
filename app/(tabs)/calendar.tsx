@@ -13,9 +13,9 @@ import {
   View
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { colors } from '../constants/theme';
-import { getEntriesByDate, getMarkedDates } from '../storage/journal';
-import { JournalEntry } from '../types/journal';
+import { colors } from '../../constants/theme';
+import { getEntriesByDate, getMarkedDates } from '../../storage/journal';
+import { JournalEntry } from '../../types/journal';
 
 const { width, height } = Dimensions.get('window');
 

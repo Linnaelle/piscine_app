@@ -1,95 +1,105 @@
-import { MaterialIcons } from '@expo/vector-icons';
-import { CameraType, CameraView, useCameraPermissions } from 'expo-camera';
-import * as Location from 'expo-location';
-import { useEffect, useRef, useState } from 'react';
-import { Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors } from '../constants/theme';
-import { addEntry } from '../storage/journal';
-import { JournalEntry } from '../types/journal';
+import { isAuthenticated, setAuthenticatedUser } from '../storage/auth';
+import { User, createUser, getAllUsers, getUser, loginUser } from '../storage/user';
 
-export default function CameraScreen() {
-  const [facing, setFacing] = useState<CameraType>('back');
-  const [permission, requestPermission] = useCameraPermissions();
-  const [isCapturing, setIsCapturing] = useState(false);
-  const cameraRef = useRef<CameraView>(null);
+export default function LoginScreen() {
+  const [user, setUser] = useState<User | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [bio, setBio] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const [showUserSelection, setShowUserSelection] = useState(false);
 
   useEffect(() => {
-    requestPermissions();
+    const initializeApp = async () => {
+      checkExistingUser();
+    };
+  
+    initializeApp();
   }, []);
 
-  const requestPermissions = async () => {
-    if (!permission?.granted) {
-      await requestPermission();
-    }
-    
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission', 'Permission de localisation requise pour enregistrer la position des photos');
-    }
-  };
-
-  const getCurrentPosition = async (): Promise<{ latitude: number; longitude: number }> => {
+  const checkExistingUser = async () => {
+    setIsLoading(true);
     try {
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-      return {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-    } catch (error) {
-      console.log('Geolocation error:', error);
-      return { latitude: 44.2023, longitude: 1.1237 };
-    }
-  };
-
-  const takePicture = async () => {
-    if (!cameraRef.current || isCapturing) return;
-
-    setIsCapturing(true);
-    
-    try {
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
-      });
-      
-      if (!photo?.uri) {
-        throw new Error('Aucune photo capturée');
+      const isAuth = await isAuthenticated();
+      if (isAuth) {
+        const existingUser = await getUser();
+        if (existingUser) {
+          setUser(existingUser);
+        }
+      } else {
+        const users = await getAllUsers();
+        setAvailableUsers(users);
+        setUser(null);
       }
-
-      const position = await getCurrentPosition();
-      
-      const now = new Date();
-      const entry: JournalEntry = {
-        id: Date.now().toString(),
-        uri: photo.uri,
-        latitude: position.latitude,
-        longitude: position.longitude,
-        timestamp: now.getTime(),
-        dateKey: now.toISOString().split('T')[0],
-      };
-
-      await addEntry(entry);
-      Alert.alert('Succès', 'Photo sauvegardée avec succès');
-      
     } catch (error) {
-      console.error('Error taking picture:', error);
-      Alert.alert('Erreur', 'Impossible de prendre la photo : ', error);
+      console.error('Error checking user:', error);
+      setUser(null);
     } finally {
-      setIsCapturing(false);
+      setIsLoading(false);
     }
   };
 
-  if (!permission) {
-    return <View />;
-  }
+  const selectUser = (selectedUser: User) => {
+    setUsername(selectedUser.username);
+    setShowUserSelection(false);
+  };
 
-  if (!permission.granted) {
+  const handleLogin = async () => {
+    if (!username.trim() || !password) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs');
+      return;
+    }
+
+    try {
+      const loggedUser = await loginUser(username, password);
+      setUser(loggedUser);
+      await setAuthenticatedUser(loggedUser);
+    } catch (error) {
+      console.error('Error logging in:', error);
+      Alert.alert('Erreur', 'Identifiants incorrects');
+    }
+  };
+
+  const handleRegister = async () => {
+    if (!username.trim() || !password || !name.trim()) {
+      Alert.alert('Erreur', 'Veuillez remplir tous les champs obligatoires');
+      return;
+    }
+
+    try {
+      const newUser = await createUser(username, password, name, bio);
+      setUser(newUser);
+      await setAuthenticatedUser(newUser);
+    } catch (error) {
+      console.error('Error creating user:', error);
+      Alert.alert('Erreur', 'Impossible de créer le compte');
+    }
+  };
+
+  if (isLoading) {
     return (
       <View style={styles.container}>
-        <Text style={styles.message}>Permission de caméra requise</Text>
-        <TouchableOpacity style={styles.button} onPress={requestPermission}>
-          <Text style={styles.text}>Autoriser la caméra</Text>
+        <Text style={styles.text}>Chargement...</Text>
+      </View>
+    );
+  }
+
+  if (user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.welcome}>Bienvenue {user.name} !</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push('/(tabs)/camera')}
+        >
+          <Text style={styles.buttonText}>Commencer</Text>
         </TouchableOpacity>
       </View>
     );
@@ -97,30 +107,83 @@ export default function CameraScreen() {
 
   return (
     <View style={styles.container}>
-      <CameraView 
-        style={styles.camera} 
-        facing={facing}
-        ref={cameraRef}
-      >
-        <View style={styles.overlay}>
-          <View style={styles.topBar}>
-          </View>
+      <Text style={styles.title}>
+        {isRegistering ? 'Créer un compte' : 'Connexion'}
+      </Text>
+      
+      <TextInput
+        style={styles.input}
+        placeholder="Nom d'utilisateur"
+        placeholderTextColor={colors.muted}
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Mot de passe"
+        placeholderTextColor={colors.muted}
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+
+      {isRegistering && (
+        <>
+          <TextInput
+            style={styles.input}
+            placeholder="Nom complet"
+            placeholderTextColor={colors.muted}
+            value={name}
+            onChangeText={setName}
+          />
           
-          <View style={styles.bottomBar}>
+          <TextInput
+            style={[styles.input, styles.bioInput]}
+            placeholder="Bio (optionnel)"
+            placeholderTextColor={colors.muted}
+            value={bio}
+            onChangeText={setBio}
+            multiline
+          />
+        </>
+      )}
+
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={isRegistering ? handleRegister : handleLogin}
+      >
+        <Text style={styles.buttonText}>
+          {isRegistering ? 'Créer mon compte' : 'Se connecter'}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.switchButton}
+        onPress={() => setIsRegistering(!isRegistering)}
+      >
+        <Text style={styles.switchButtonText}>
+          {isRegistering ? 'Déjà un compte ? Se connecter' : 'Créer un compte'}
+        </Text>
+      </TouchableOpacity>
+      {!isRegistering && availableUsers.length > 0 && (
+        <View style={styles.usersSection}>
+          <Text style={styles.usersTitle}>Utilisateurs existants :</Text>
+          {availableUsers.slice(0, 3).map(user => (
             <TouchableOpacity
-              style={[styles.captureBtn, isCapturing && styles.capturingBtn]}
-              onPress={takePicture}
-              disabled={isCapturing}
+              key={user.id}
+              style={styles.userItem}
+              onPress={() => selectUser(user)}
             >
-              <MaterialIcons 
-                name="camera" 
-                size={40} 
-                color={isCapturing ? colors.muted : colors.text} 
-              />
+              <Text style={styles.userName}>{user.name}</Text>
+              <Text style={styles.userLastLogin}>
+                Dernière connexion : {new Date(user.lastLoginAt).toLocaleDateString()}
+              </Text>
             </TouchableOpacity>
-          </View>
+          ))}
         </View>
-      </CameraView>
+      )}
     </View>
   );
 }
@@ -129,61 +192,86 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.bg,
+    padding: 20,
     justifyContent: 'center',
-  },
-  message: {
-    textAlign: 'center',
-    paddingBottom: 10,
-    color: colors.text,
-  },
-  camera: {
-    flex: 1,
-  },
-  overlay: {
-    flex: 1,
-    justifyContent: 'space-between',
-  },
-  topBar: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    alignItems: 'center',
   },
   title: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: colors.text,
-    fontSize: 18,
-    fontWeight: '600',
-    textShadowColor: 'rgba(0, 0, 0, 0.75)',
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 10,
+    marginBottom: 30,
+    textAlign: 'center',
   },
-  bottomBar: {
-    paddingBottom: 40,
-    alignItems: 'center',
+  welcome: {
+    fontSize: 20,
+    color: colors.text,
+    marginBottom: 30,
+    textAlign: 'center',
   },
-  captureBtn: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 4,
-    borderColor: colors.text,
+  input: {
+    backgroundColor: colors.card,
+    padding: 16,
+    borderRadius: 12,
+    color: colors.text,
+    fontSize: 16,
+    marginBottom: 16,
   },
-  capturingBtn: {
-    backgroundColor: colors.muted,
-    borderColor: colors.muted,
+  bioInput: {
+    height: 100,
+    textAlignVertical: 'top',
   },
   button: {
     backgroundColor: colors.primary,
     padding: 16,
-    borderRadius: 8,
-    marginHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: colors.bg,
+    fontSize: 16,
+    fontWeight: '600',
   },
   text: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: colors.text,
+    fontSize: 16,
     textAlign: 'center',
-    color: colors.bg,
+  },
+  switchButton: {
+    marginTop: 20,
+    padding: 10,
+  },
+  switchButtonText: {
+    color: colors.primary,
+    textAlign: 'center',
+    fontSize: 14,
+  },
+  usersSection: {
+    marginTop: 20,
+    marginBottom: 16,
+  },
+  usersTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  userItem: {
+    backgroundColor: colors.card,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.primary + '20',
+  },
+  userName: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  userLastLogin: {
+    color: colors.muted,
+    fontSize: 12,
   },
 });
