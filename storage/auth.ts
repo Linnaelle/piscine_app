@@ -3,6 +3,10 @@ import { UserEntry } from '../types/user';
 
 const AUTH_KEY = 'TRAVEL_JOURNAL_AUTH_V1';
 
+/**
+ * Check if a user is authenticated.
+ * @returns True if a user is authenticated, false otherwise.
+ */
 export const isAuthenticated = async (): Promise<boolean> => {
   try {
     const user = await AsyncStorage.getItem(AUTH_KEY);
@@ -12,10 +16,18 @@ export const isAuthenticated = async (): Promise<boolean> => {
   }
 };
 
+/**
+ * Set the authenticated user.
+ * @param user The user to set as authenticated, or null to log out.
+ */
 export const setAuthenticatedUser = async (user: UserEntry | null): Promise<void> => {
   try {
     if (user) {
-      await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(user));
+      const authData = {
+        id: user.id,
+        username: user.username
+      };
+      await AsyncStorage.setItem(AUTH_KEY, JSON.stringify(authData));
     } else {
       await AsyncStorage.removeItem(AUTH_KEY);
     }
@@ -25,6 +37,10 @@ export const setAuthenticatedUser = async (user: UserEntry | null): Promise<void
   }
 };
 
+/**
+ * Get the currently authenticated user.
+ * @returns The currently authenticated user or null if no user is authenticated.
+ */
 export const getAuthenticatedUser = async (): Promise<UserEntry | null> => {
   try {
     const data = await AsyncStorage.getItem(AUTH_KEY);

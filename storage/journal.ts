@@ -12,6 +12,10 @@ const getUserEntriesKey = async (): Promise<string> => {
   return `${BASE_KEY}_${user.id}`;
 };
 
+/**
+ * Get all journal entries for the authenticated user.
+ * @returns All journal entries for the authenticated user.
+ */
 export async function getEntries(): Promise<JournalEntry[]> {
   try {
     const key = await getUserEntriesKey();
@@ -23,6 +27,10 @@ export async function getEntries(): Promise<JournalEntry[]> {
   }
 }
 
+/**
+ * Add a new journal entry.
+ * @param entry The journal entry to add.
+ */
 export async function addEntry(entry: JournalEntry): Promise<void> {
   try {
     const key = await getUserEntriesKey();
@@ -35,6 +43,11 @@ export async function addEntry(entry: JournalEntry): Promise<void> {
   }
 }
 
+/**
+ * Get all journal entries for a specific date.
+ * @param dateKey The date key (YYYY-MM-DD) to filter entries by.
+ * @returns All journal entries for the specified date.
+ */
 export async function getEntriesByDate(dateKey: string): Promise<JournalEntry[]> {
   try {
     const all = await getEntries();
@@ -45,6 +58,10 @@ export async function getEntriesByDate(dateKey: string): Promise<JournalEntry[]>
   }
 }
 
+/**
+ * Get all marked dates for the authenticated user.
+ * @returns A record of dates with marked entries for calendar display.
+ */
 export async function getMarkedDates(): Promise<Record<string, { marked: boolean; dots?: any }>> {
   try {
     const all = await getEntries();

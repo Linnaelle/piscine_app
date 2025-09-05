@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { colors } from '../constants/theme';
 import { isAuthenticated, setAuthenticatedUser } from '../storage/auth';
-import { User, createUser, getUser, loginUser } from '../storage/user';
+import { User, createUser, getAllUsers, getUser, loginUser } from '../storage/user';
 
 export default function LoginScreen() {
   const [user, setUser] = useState<User | null>(null);
@@ -13,6 +13,8 @@ export default function LoginScreen() {
   const [name, setName] = useState('');
   const [bio, setBio] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [availableUsers, setAvailableUsers] = useState<User[]>([]);
+  const [showUserSelection, setShowUserSelection] = useState(false);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -23,6 +25,7 @@ export default function LoginScreen() {
   }, []);
 
   const checkExistingUser = async () => {
+    setIsLoading(true);
     try {
       const isAuth = await isAuthenticated();
       if (isAuth) {
@@ -31,6 +34,8 @@ export default function LoginScreen() {
           setUser(existingUser);
         }
       } else {
+        const users = await getAllUsers();
+        setAvailableUsers(users);
         setUser(null);
       }
     } catch (error) {
@@ -39,6 +44,11 @@ export default function LoginScreen() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const selectUser = (selectedUser: User) => {
+    setUsername(selectedUser.username);
+    setShowUserSelection(false);
   };
 
   const handleLogin = async () => {
@@ -157,6 +167,23 @@ export default function LoginScreen() {
           {isRegistering ? 'Déjà un compte ? Se connecter' : 'Créer un compte'}
         </Text>
       </TouchableOpacity>
+      {!isRegistering && availableUsers.length > 0 && (
+        <View style={styles.usersSection}>
+          <Text style={styles.usersTitle}>Utilisateurs existants :</Text>
+          {availableUsers.slice(0, 3).map(user => (
+            <TouchableOpacity
+              key={user.id}
+              style={styles.userItem}
+              onPress={() => selectUser(user)}
+            >
+              <Text style={styles.userName}>{user.name}</Text>
+              <Text style={styles.userLastLogin}>
+                Dernière connexion : {new Date(user.lastLoginAt).toLocaleDateString()}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -217,5 +244,34 @@ const styles = StyleSheet.create({
     color: colors.primary,
     textAlign: 'center',
     fontSize: 14,
+  },
+  usersSection: {
+    marginTop: 20,
+    marginBottom: 16,
+  },
+  usersTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  userItem: {
+    backgroundColor: colors.card,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: colors.primary + '20',
+  },
+  userName: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '500',
+    marginBottom: 4,
+  },
+  userLastLogin: {
+    color: colors.muted,
+    fontSize: 12,
   },
 });
