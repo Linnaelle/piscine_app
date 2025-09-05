@@ -10,6 +10,7 @@ Une application mobile de journal de voyage développée avec React Native et Ex
 - **Carte interactive** : Exploration des voyages sur une carte avec Leaflet
 - **Galerie** : Une liste de toutes les photos prises
 - **Profil** : Statistiques personnalisées
+- **Login** : Fonctions d'authentification et d'enregistrement des utilisateurs
 
 
 ## Technologies Utilisées
@@ -27,8 +28,8 @@ Une application mobile de journal de voyage développée avec React Native et Ex
 
 ### Prérequis
 - Node.js (v16 ou supérieur)
-- Expo CLI installé globalement
-- Un appareil mobile avec l'app Expo Go, ou un émulateur Android/iOS (iOS jamais testé, Android recommandé)
+- Expo installé globalement
+- Un appareil mobile avec l'app Expo Go SDK 51, ou un émulateur Android/iOS (iOS jamais testé, Android recommandé)
 
 ### Installation
 
@@ -72,8 +73,11 @@ piscine_app/
 ├── constants/
 │   └── theme.ts          # Thème et couleurs
 ├── storage/
-│   └── journal.ts        # Gestion du stockage local
+│   ├── journal.ts        # Gestion du stockage local
+│   ├── user.ts           # Gestion des utilisateurs
+│   └── auth.ts           # Gestion de l'authentification
 ├── types/
+│   ├── user.ts           # Modèles utilisateurs
 │   └── journal.ts        # Modèles de donnée
 └── screenshots/          # Captures d'écran
 ```
@@ -92,31 +96,31 @@ type JournalEntry = {
 };
 ```
 
-#### UserData
+#### UserEntry
 ```typescript
-type UserData = {
-  name: string;         // Nom de l'utilisateur
-  bio: string;          // Biographie
+type UserEntry = {
+  id: string;           // Identifiant unique
+  username: string;     // Nom d'utilisateur
 };
 ```
 
 ### Vues et Écrans
 
-#### 1. CameraScreen (`app/index.tsx`)
+#### 1. CameraScreen (`app/(tabs)/camera.tsx`)
 - **Fonctionnalité** : Capture de photos avec géolocalisation
 - **Composants clés** : `CameraView`, `TouchableOpacity`
 - **Permissions** : Caméra et Localisation
 - **Storage** : Sauvegarde automatique via `addEntry()`
 ![Camera Screen](./screenshots/camera-screen.jpg)
 
-#### 2. CalendarScreen (`app/calendar.tsx`)
+#### 2. CalendarScreen (`app/(tabs)/calendar.tsx`)
 - **Fonctionnalité** : Navigation par dates avec aperçu photos
 - **Composants clés** : `Calendar`, `FlatList`, `Modal`
 - **Data** : `getMarkedDates()`, `getEntriesByDate()`
 - **UI** : Grille 2 colonnes, modal photo plein écran
 ![Calendar Screen](./screenshots/calendar-screen.jpg)
 
-#### 3. MapScreen (`app/map.tsx`)
+#### 3. MapScreen (`app/(tabs)/map.tsx`)
 - **Fonctionnalité** : Carte interactive avec markers
 - **Composants clés** : `WebView` avec Leaflet
 - **Data** : Toutes les entrées avec coordonnées GPS
@@ -124,19 +128,24 @@ type UserData = {
 ![Map Screen](./screenshots/map-screen.jpg)
 
 
-#### 4. PhotosScreen (`app/photos.tsx`)
+#### 4. PhotosScreen (`app/(tabs)/photos.tsx`)
 - **Fonctionnalité** : Galerie avec filtres
 - **Composants clés** : `FlatList`, `Picker`, `Modal`
 - **Features** : Filtre par date, compteur photos
 - **UI** : Grille responsive, overlay dates
 ![Photos Screen](./screenshots/photos-screen.jpg)
 
-#### 5. ProfileScreen (`app/profile.tsx`)
+#### 5. ProfileScreen (`app/(tabs)/profile.tsx`)
 - **Fonctionnalité** : Profil utilisateur et statistiques
 - **Storage** : `AsyncStorage` pour données utilisateur
 - **Statistiques** : Total photos, jours, lieux, moyennes
 - **UI** : Formulaire + cards statistiques
 ![Profile Screen](./screenshots/profile-screen.jpg)
+
+#### 6. LoginScreen (`app/index.tsx`)
+- **Fonctionnalité** : Création de compte, connexion et aperçu des utilisateurs
+- **UI** : Formulaire + cards utilisateurs
+![Login Screen](./screenshots/login-screen.png)
 
 ### Gestion du Stockage
 
@@ -149,6 +158,17 @@ type UserData = {
 - `addEntry(entry)` : Ajoute une nouvelle entrée
 - `getEntriesByDate(dateKey)` : Filtre par date
 - `getMarkedDates()` : Dates avec photos pour calendrier
+
+#### Fonctions Authentification (`storage/auth.ts`)
+- `isAuthenticated()` : Vérifie si un utilisateur est authentifié
+- `setAuthenticatedUser()` : Définie un utilisateur comme connecté
+- `getAuthenticatedUser()` : Récupère l'utilisateur authentifié
+
+#### Fonctions Utilisateur (`storage/user.ts`)
+- `createUser()` : Crée un utilisateur
+- `getAllUsers()` : Récupère la liste des utilisateurs
+- `getUser()` : Récupère les informations d'un utilisateur
+- `loginUser()` : Connecte un utilisateur à l'application
 
 ### Thème et Design
 Le design utilise un thème sombre moderne défini dans `constants/theme.ts` :
@@ -190,3 +210,5 @@ npx expo start
 - [ ] Mode sombre/clair
 - [ ] Statistiques avancées avec graphiques
 - [ ] Système de social (ami, likes, etc..)
+- [ ] Stockage cloud des utilisateurs plutôt que local
+- [ ] Aspect jeux vidéo (récompenses, points, etc)
